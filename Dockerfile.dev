@@ -1,0 +1,30 @@
+# Development Dockerfile
+FROM node:18-alpine
+
+# Install dependencies
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Expose port
+EXPOSE 3002
+
+# Set environment
+ENV NODE_ENV development
+ENV PORT 3002
+ENV HOSTNAME "0.0.0.0"
+
+# Start development server
+CMD ["sh", "-c", "npx prisma db push && npm run dev"]

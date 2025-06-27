@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: smart-recipe-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: smart_recipe_generator
+      POSTGRES_USER: recipe_user
+      POSTGRES_PASSWORD: recipe_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - recipe-network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart-recipe-app
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:3002
+      - NEXTAUTH_URL=http://localhost:3002
+      - NEXTAUTH_SECRET=your-secret-key-here-change-this-in-production
+      - JWT_SECRET=your-jwt-secret-key-change-this-in-production
+      - BCRYPT_ROUNDS=12
+      - DATABASE_URL=postgresql://recipe_user:recipe_password_123@postgres:5432/smart_recipe_generator?schema=public
+      - LM_STUDIO_BASE_URL=https://hahahagame-gemini-play.deno.dev
+      - LM_STUDIO_API_KEY=AIzaSyBzW2lNRzFaZ16T7SEr5HlYfQQVogpMf4U
+      - API_REQUEST_LIMIT=100
+      - IMAGES_STORAGE_PATH=./public/images/recipes
+      - AUDIO_STORAGE_PATH=./public/audio/recipes
+    volumes:
+      - ./public/images:/app/public/images
+      - ./public/audio:/app/public/audio
+    depends_on:
+      - postgres
+    networks:
+      - recipe-network
+
+  # Development version (optional - for development use)
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: smart-recipe-app-dev
+    restart: unless-stopped
+    ports:
+      - "3003:3002"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:3003
+      - NEXTAUTH_URL=http://localhost:3003
+      - NEXTAUTH_SECRET=your-secret-key-here-change-this-in-production
+      - JWT_SECRET=your-jwt-secret-key-change-this-in-production
+      - BCRYPT_ROUNDS=12
+      - DATABASE_URL=postgresql://recipe_user:recipe_password_123@postgres:5432/smart_recipe_generator?schema=public
+      - LM_STUDIO_BASE_URL=https://hahahagame-gemini-play.deno.dev
+      - LM_STUDIO_API_KEY=AIzaSyBzW2lNRzFaZ16T7SEr5HlYfQQVogpMf4U
+      - API_REQUEST_LIMIT=100
+      - IMAGES_STORAGE_PATH=./public/images/recipes
+      - AUDIO_STORAGE_PATH=./public/audio/recipes
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - postgres
+    networks:
+      - recipe-network
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+
+networks:
+  recipe-network:
+    driver: bridge

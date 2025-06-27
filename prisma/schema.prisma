@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  image     String?
+  emailVerified DateTime?
+  isActive  Boolean  @default(true)
+  role      String   @default("user")
+  
+  // Preferences as JSON
+  preferences Json @default("{}")
+  
+  // Stats as JSON  
+  stats     Json @default("{}")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  recipes   Recipe[]
+  forumPosts ForumPost[]
+  forumComments ForumComment[]
+  notifications Notification[]
+  aiGenerated AIGenerated[]
+  
+  @@map("users")
+}
+
+model Recipe {
+  id          String   @id @default(cuid())
+  name        String
+  ingredients Json     // Array of {name, quantity}
+  instructions String[]
+  dietaryPreference String[]
+  additionalInformation Json @default("{}")
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  likes       String[] // Array of user IDs
+  likesCount  Int      @default(0)
+  image       String?
+  audio       String?
+  tags        Json     @default("[]") // Array of {tag}
+  
+  openaiPromptId String?
+  isShared    Boolean  @default(false)
+  sharedAt    DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("recipes")
+}
+
+model ForumPost {
+  id            String   @id @default(cuid())
+  title         String
+  content       String
+  category      String   // tips, ingredients, questions, reviews
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userName      String
+  
+  tags          String[]
+  likes         String[] // Array of user IDs
+  likesCount    Int      @default(0)
+  commentsCount Int      @default(0)
+  
+  isSticky      Boolean  @default(false)
+  isLocked      Boolean  @default(false)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  comments      ForumComment[]
+  
+  @@map("forumposts")
+}
+
+model ForumComment {
+  id              String   @id @default(cuid())
+  content         String
+  
+  postId          String
+  post            ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userName        String
+  
+  parentCommentId String?
+  parentComment   ForumComment? @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  replies         ForumComment[] @relation("CommentReplies")
+  
+  likes           String[] // Array of user IDs
+  likesCount      Int      @default(0)
+  isDeleted       Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("forumcomments")
+}
+
+model Notification {
+  id              String   @id @default(cuid())
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type            String   // like, comment, follow, recipe_generated, system
+  message         String
+  relatedRecipeId String?
+  relatedUserId   String?
+  read            Boolean  @default(false)
+  priority        String   @default("medium") // low, medium, high
+  metadata        Json?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("notifications")
+}
+
+model AIGenerated {
+  id           String   @id @default(cuid())
+  
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  prompt       String
+  response     Json
+  model        String   @default("gemini-2.0-flash")
+  tokens       Int      @default(0)
+  cost         Float    @default(0)
+  status       String   @default("success") // success, error, pending
+  errorMessage String?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("aigenerateds")
+}

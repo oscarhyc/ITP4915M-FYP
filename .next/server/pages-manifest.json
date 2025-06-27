@@ -1,0 +1,12 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/": "pages/index.js",
+  "/api/recipes/shared": "pages/api/recipes/shared.js",
+  "/api/auth/me": "pages/api/auth/me.js",
+  "/api/user/stats": "pages/api/user/stats.js",
+  "/auth/signin": "pages/auth/signin.js",
+  "/api/auth/login": "pages/api/auth/login.js",
+  "/auth/register": "pages/auth/register.js"
+}
