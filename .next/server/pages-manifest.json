@@ -1,0 +1,13 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/": "pages/index.js",
+  "/forum": "pages/forum.js",
+  "/forum/[id]": "pages/forum/[id].js",
+  "/api/forum/posts": "pages/api/forum/posts.js",
+  "/api/forum/posts/[id]": "pages/api/forum/posts/[id].js",
+  "/api/recipes/shared": "pages/api/recipes/shared.js",
+  "/api/user/stats": "pages/api/user/stats.js",
+  "/recipes/[id]": "pages/recipes/[id].js"
+}

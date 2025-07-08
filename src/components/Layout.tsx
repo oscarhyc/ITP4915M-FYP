@@ -56,7 +56,7 @@ export default function Layout({ children }: LayoutProps) {
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                Generate
+                Generate Recipe
               </button>
               
               <button
@@ -78,7 +78,7 @@ export default function Layout({ children }: LayoutProps) {
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                Collections
+                My Collections
               </button>
               
               <button
@@ -89,7 +89,7 @@ export default function Layout({ children }: LayoutProps) {
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                Shopping
+                Shopping list
               </button>
               
               <button
