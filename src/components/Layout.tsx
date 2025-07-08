@@ -36,10 +36,10 @@ export default function Layout({ children }: LayoutProps) {
               </button>
             </div>
             
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3 lg:space-x-6">
               <button
                 onClick={() => router.push('/')}
-                className={`text-sm font-medium transition-colors ${
+                className={`text-xs lg:text-sm font-medium transition-colors ${
                   isActive('/') 
                     ? 'text-orange-600 border-b-2 border-orange-600 pb-1' 
                     : 'text-gray-700 hover:text-gray-900'
@@ -50,29 +50,62 @@ export default function Layout({ children }: LayoutProps) {
               
               <button
                 onClick={() => router.push('/generate')}
-                className={`text-sm font-medium transition-colors ${
+                className={`text-xs lg:text-sm font-medium transition-colors ${
                   isActive('/generate') 
                     ? 'text-orange-600 border-b-2 border-orange-600 pb-1' 
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                Generate Recipe
+                Generate
+              </button>
+              
+              <button
+                onClick={() => router.push('/ai-camera')}
+                className={`text-xs lg:text-sm font-medium transition-colors ${
+                  isActive('/ai-camera') 
+                    ? 'text-orange-600 border-b-2 border-orange-600 pb-1' 
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                AI Camera
+              </button>
+              
+              <button
+                onClick={() => router.push('/collections')}
+                className={`text-xs lg:text-sm font-medium transition-colors ${
+                  router.pathname.startsWith('/collections') 
+                    ? 'text-orange-600 border-b-2 border-orange-600 pb-1' 
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                Collections
+              </button>
+              
+              <button
+                onClick={() => router.push('/shopping-lists')}
+                className={`text-xs lg:text-sm font-medium transition-colors ${
+                  router.pathname.startsWith('/shopping-lists') 
+                    ? 'text-orange-600 border-b-2 border-orange-600 pb-1' 
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                Shopping
               </button>
               
               <button
                 onClick={() => router.push('/forum')}
-                className={`text-sm font-medium transition-colors ${
+                className={`text-xs lg:text-sm font-medium transition-colors ${
                   router.pathname.startsWith('/forum') 
                     ? 'text-orange-600 border-b-2 border-orange-600 pb-1' 
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                Community Forum
+                Forum
               </button>
               
               <button
                 onClick={() => router.push('/profile')}
-                className={`text-sm font-medium transition-colors ${
+                className={`text-xs lg:text-sm font-medium transition-colors ${
                   isActive('/profile') 
                     ? 'text-orange-600 border-b-2 border-orange-600 pb-1' 
                     : 'text-gray-700 hover:text-gray-900'
@@ -81,13 +114,13 @@ export default function Layout({ children }: LayoutProps) {
                 Profile
               </button>
               
-              <div className="flex items-center space-x-3 border-l border-gray-200 pl-6">
-                <span className="text-sm text-gray-700">
-                  Welcome, {user.name}!
+              <div className="flex items-center space-x-2 lg:space-x-3 border-l border-gray-200 pl-3 lg:pl-6">
+                <span className="text-xs lg:text-sm text-gray-700 hidden sm:inline">
+                  {user.name}
                 </span>
                 <button
                   onClick={logout}
-                  className="btn-outline text-sm"
+                  className="btn-outline text-xs lg:text-sm px-2 lg:px-3 py-1"
                 >
                   Sign Out
                 </button>

@@ -35,6 +35,11 @@ model User {
   forumComments ForumComment[]
   notifications Notification[]
   aiGenerated AIGenerated[]
+  recipeCollections RecipeCollection[]
+  recipeReviews RecipeReview[]
+  collectionRecipes CollectionRecipe[]
+  shoppingLists ShoppingList[]
+  shoppingListItems ShoppingListItem[]
   
   @@map("users")
 }
@@ -62,6 +67,11 @@ model Recipe {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  // Relations
+  reviews RecipeReview[]
+  collectionRecipes CollectionRecipe[]
+  shoppingListItems ShoppingListItem[]
   
   @@map("recipes")
 }
@@ -156,4 +166,111 @@ model AIGenerated {
   updatedAt    DateTime @updatedAt
   
   @@map("aigenerateds")
+}
+
+// Recipe Collection System
+model RecipeCollection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isPublic    Boolean  @default(false)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  collectionRecipes CollectionRecipe[]
+  
+  @@map("recipecollections")
+}
+
+// Junction table for Recipe Collections
+model CollectionRecipe {
+  id           String   @id @default(cuid())
+  
+  collectionId String
+  collection   RecipeCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  
+  recipeId     String
+  recipe       Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  addedAt      DateTime @default(now())
+  notes        String?  // Personal notes about this recipe in the collection
+  
+  @@unique([collectionId, recipeId])
+  @@map("collectionrecipes")
+}
+
+// Recipe Review System
+model RecipeReview {
+  id        String   @id @default(cuid())
+  rating    Int      // 1-5 stars
+  comment   String?
+  
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userName  String   // Denormalized for performance
+  
+  isPublic  Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([recipeId, userId]) // One review per user per recipe
+  @@map("recipereviews")
+}
+
+// Shopping List System
+model ShoppingList {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isCompleted Boolean  @default(false)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  items       ShoppingListItem[]
+  
+  @@map("shoppinglists")
+}
+
+// Shopping List Items
+model ShoppingListItem {
+  id            String   @id @default(cuid())
+  name          String
+  quantity      String
+  unit          String?
+  category      String?  // 食材分類：蔬菜、肉類、調料等
+  isCompleted   Boolean  @default(false)
+  estimatedPrice Float?
+  notes         String?
+  
+  shoppingListId String
+  shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 來源食譜（如果是從食譜生成的）
+  sourceRecipeId String?
+  sourceRecipe   Recipe? @relation(fields: [sourceRecipeId], references: [id], onDelete: SetNull)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("shoppinglistitems")
 }

@@ -192,10 +192,25 @@ export default function Home() {
                   onClick={() => router.push('/generate')}
                   className="btn-primary w-full sm:w-auto"
                 >
-                  Generate Recipe
+                  🍳 Generate Recipe
                 </button>
-                <button className="btn-outline w-full sm:w-auto">
-                  Browse Recipes
+                <button
+                  onClick={() => router.push('/ai-camera')}
+                  className="btn-primary w-full sm:w-auto"
+                >
+                  📸 AI Camera
+                </button>
+                <button 
+                  onClick={() => router.push('/shopping-lists')}
+                  className="btn-outline w-full sm:w-auto"
+                >
+                  🛒 Shopping Lists
+                </button>
+                <button 
+                  onClick={() => router.push('/collections')}
+                  className="btn-outline w-full sm:w-auto"
+                >
+                  📚 My Collections
                 </button>
               </div>
             </div>
@@ -297,30 +312,43 @@ export default function Home() {
                         </p>
                       </div>
 
-                      {/* Like Button */}
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                        <div className="flex items-center space-x-2">
-                          {!recipe.isOwnRecipe && (
-                            <button
-                              onClick={() => handleLikeRecipe(recipe.id, recipe.isLikedByCurrentUser)}
-                              disabled={likingRecipes.has(recipe.id)}
-                              className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-                                recipe.isLikedByCurrentUser
-                                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              } disabled:opacity-50 disabled:cursor-not-allowed`}
-                            >
-                              <span>{recipe.isLikedByCurrentUser ? '❤️' : '🤍'}</span>
-                              <span>{likingRecipes.has(recipe.id) ? 'Loading...' : (recipe.isLikedByCurrentUser ? 'Liked' : 'Like')}</span>
-                            </button>
-                          )}
-                          <span className="text-sm text-gray-500">
-                            {recipe.likesCount} {recipe.likesCount === 1 ? 'like' : 'likes'}
-                          </span>
+                      {/* Action Buttons */}
+                      <div className="pt-3 border-t border-gray-100 space-y-2">
+                        {/* View Details Button */}
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => router.push(`/recipes/${recipe.id}`)}
+                            className="btn-primary text-sm w-full"
+                          >
+                            📖 查看詳情
+                          </button>
                         </div>
-                        {recipe.isOwnRecipe && (
-                          <span className="text-xs text-gray-500 italic">Your recipe</span>
-                        )}
+                        
+                        {/* Like Button and Stats */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            {!recipe.isOwnRecipe && (
+                              <button
+                                onClick={() => handleLikeRecipe(recipe.id, recipe.isLikedByCurrentUser)}
+                                disabled={likingRecipes.has(recipe.id)}
+                                className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                  recipe.isLikedByCurrentUser
+                                    ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                              >
+                                <span>{recipe.isLikedByCurrentUser ? '❤️' : '🤍'}</span>
+                                <span>{likingRecipes.has(recipe.id) ? 'Loading...' : (recipe.isLikedByCurrentUser ? 'Liked' : 'Like')}</span>
+                              </button>
+                            )}
+                            <span className="text-sm text-gray-500">
+                              {recipe.likesCount} {recipe.likesCount === 1 ? 'like' : 'likes'}
+                            </span>
+                          </div>
+                          {recipe.isOwnRecipe && (
+                            <span className="text-xs text-gray-500 italic">Your recipe</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

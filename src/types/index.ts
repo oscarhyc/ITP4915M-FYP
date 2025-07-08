@@ -97,6 +97,94 @@ export interface RecipeGenerationForm {
   dietaryPreferences: DietaryPreference[];
 }
 
+// Recipe Collection types
+export interface RecipeCollection {
+  id: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  collectionRecipes?: CollectionRecipe[];
+  _count?: {
+    collectionRecipes: number;
+  };
+}
+
+export interface CollectionRecipe {
+  id: string;
+  collectionId: string;
+  recipeId: string;
+  userId: string;
+  addedAt: Date;
+  notes?: string;
+  recipe?: ExtendedRecipe;
+  collection?: RecipeCollection;
+}
+
+// Recipe Review types
+export interface RecipeReview {
+  id: string;
+  rating: number; // 1-5 stars
+  comment?: string;
+  recipeId: string;
+  userId: string;
+  userName: string;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: User;
+  recipe?: ExtendedRecipe;
+}
+
+// Shopping List types
+export interface ShoppingList {
+  id: string;
+  name: string;
+  description?: string;
+  isCompleted: boolean;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  items?: ShoppingListItem[];
+  _count?: {
+    items: number;
+  };
+}
+
+export interface ShoppingListItem {
+  id: string;
+  name: string;
+  quantity: string;
+  unit?: string;
+  category?: string;
+  isCompleted: boolean;
+  estimatedPrice?: number;
+  notes?: string;
+  shoppingListId: string;
+  userId: string;
+  sourceRecipeId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  shoppingList?: ShoppingList;
+  sourceRecipe?: ExtendedRecipe;
+}
+
+// Food categories for shopping list organization
+export type FoodCategory = 
+  | '蔬菜' 
+  | '水果' 
+  | '肉類' 
+  | '海鮮' 
+  | '乳製品' 
+  | '調料' 
+  | '穀物' 
+  | '零食' 
+  | '飲料' 
+  | '冷凍食品' 
+  | '其他';
+
 // API Error types
 export interface APIError {
   error: string;
