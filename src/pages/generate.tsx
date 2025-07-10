@@ -47,10 +47,37 @@ export default function Generate() {
     checkSystemStatus();
   }, []);
 
+  // Handle URL parameters from AI Camera
+  useEffect(() => {
+    if (router.isReady) {
+      const { ingredients: urlIngredients, source } = router.query;
+      
+      if (urlIngredients && source === 'ai-camera') {
+        try {
+          const ingredientNames = JSON.parse(urlIngredients as string);
+          if (Array.isArray(ingredientNames) && ingredientNames.length > 0) {
+            // Convert ingredient names to ingredient objects with empty quantities
+            const newIngredients = ingredientNames.map(name => ({
+              name: name,
+              quantity: '' // User will need to fill in quantities
+            }));
+            
+            setIngredients(newIngredients);
+            
+            // Clear URL parameters to avoid re-processing
+            router.replace('/generate', undefined, { shallow: true });
+          }
+        } catch (error) {
+          console.error('Failed to parse ingredients from URL:', error);
+        }
+      }
+    }
+  }, [router.isReady, router.query, router]);
+
   const checkSystemStatus = async () => {
     try {
       const response = await axios.get('/api/system/status');
-      setSystemStatus(response.data.status);
+      setSystemStatus((response.data as any).status);
     } catch (error) {
       console.error('Failed to check system status:', error);
     }
@@ -232,15 +259,15 @@ export default function Generate() {
         dietaryPreferences,
       });
 
-      if (response.data.success) {
-        setRecipes(response.data.recipes);
-        parseRecipeResponse(response.data.recipes);
+      if ((response.data as any).success) {
+        setRecipes((response.data as any).recipes);
+        parseRecipeResponse((response.data as any).recipes);
       } else {
-        setError(response.data.message || 'Failed to generate recipes');
+        setError((response.data as any).message || 'Failed to generate recipes');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Recipe generation error:', error);
-      if (axios.isAxiosError(error) && error.response?.data?.message) {
+      if (error.response?.data?.message) {
         setError(error.response.data.message);
       } else {
         setError('Failed to generate recipes. Please try again.');
@@ -273,7 +300,7 @@ export default function Generate() {
 
       console.log('Share API response:', response.data);
 
-      if (response.data.success) {
+      if ((response.data as any).success) {
         setSaveMessage('Recipe shared to main page! Check the main page to see your shared recipe.');
         console.log('Recipe shared successfully, triggering events...');
 
@@ -297,12 +324,12 @@ export default function Generate() {
           console.log('Dispatched storage event');
         }, 500);
       } else {
-        console.error('Share API returned error:', response.data.message);
-        setSaveMessage('Failed to share recipe: ' + response.data.message);
+        console.error('Share API returned error:', (response.data as any).message);
+        setSaveMessage('Failed to share recipe: ' + (response.data as any).message);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Share recipe error:', error);
-      if (axios.isAxiosError(error) && error.response?.data?.message) {
+      if (error.response?.data?.message) {
         setSaveMessage('Failed to share recipe: ' + error.response.data.message);
       } else {
         setSaveMessage('Failed to share recipe');
