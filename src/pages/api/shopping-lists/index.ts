@@ -81,6 +81,54 @@ export default async function handler(
         shoppingList
       });
 
+    } else if (req.method === 'PUT') {
+      // Update shopping list
+      const { id } = req.query;
+      const { isCompleted } = req.body;
+
+      if (!id || typeof id !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Shopping list ID is required'
+        });
+      }
+
+      // Check if shopping list exists and belongs to current user
+      const existingList = await prisma.shoppingList.findFirst({
+        where: {
+          id: id,
+          userId: user.id
+        }
+      });
+
+      if (!existingList) {
+        return res.status(404).json({
+          success: false,
+          message: 'Shopping list not found or access denied'
+        });
+      }
+
+      // Update shopping list
+      const updatedList = await prisma.shoppingList.update({
+        where: { id: id },
+        data: {
+          isCompleted: isCompleted,
+          updatedAt: new Date()
+        },
+        include: {
+          _count: {
+            select: {
+              items: true
+            }
+          }
+        }
+      });
+
+      return res.status(200).json({
+        success: true,
+        shoppingList: updatedList
+      });
+
     } else if (req.method === 'DELETE') {
       // 刪除購物清單
       const { id } = req.query;

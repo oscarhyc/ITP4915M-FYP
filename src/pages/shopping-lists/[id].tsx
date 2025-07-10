@@ -34,8 +34,8 @@ interface ShoppingList {
 }
 
 const FOOD_CATEGORIES = [
-  '蔬菜', '水果', '肉類', '海鮮', '乳製品', 
-  '調料', '穀物', '零食', '飲料', '冷凍食品', '其他'
+  'Vegetables', 'Fruits', 'Meat', 'Seafood', 'Dairy', 
+  'Seasonings', 'Grains', 'Snacks', 'Beverages', 'Frozen Foods', 'Others'
 ];
 
 export default function ShoppingListDetail() {
@@ -49,7 +49,7 @@ export default function ShoppingListDetail() {
     name: '',
     quantity: '',
     unit: '',
-    category: '其他',
+    category: 'Others',
     estimatedPrice: '',
     notes: ''
   });
@@ -82,7 +82,7 @@ export default function ShoppingListDetail() {
         // In a real implementation, you'd want to modify the API to return the shopping list info
         const mockShoppingList: ShoppingList = {
           id: id,
-          name: '購物清單',
+          name: 'Shopping List',
           description: '',
           isCompleted: false,
           createdAt: new Date().toISOString(),
@@ -103,6 +103,16 @@ export default function ShoppingListDetail() {
       }
     } finally {
       setLoadingList(false);
+    }
+  };
+
+  const updateShoppingListStatus = async (listId: string, isCompleted: boolean) => {
+    try {
+      await axios.put(`/api/shopping-lists?id=${listId}`, {
+        isCompleted
+      });
+    } catch (error) {
+      console.error('Failed to update shopping list status:', error);
     }
   };
 
@@ -136,7 +146,7 @@ export default function ShoppingListDetail() {
           name: '',
           quantity: '',
           unit: '',
-          category: '其他',
+          category: 'Others',
           estimatedPrice: '',
           notes: ''
         });
@@ -172,8 +182,13 @@ export default function ShoppingListDetail() {
               : item
           );
           
-          // 檢查是否所有項目都已完成
+          // Check if all items are completed
           const allCompleted = updatedItems.length > 0 && updatedItems.every(item => item.isCompleted);
+          
+          // Update shopping list completion status in database if it changed
+          if (allCompleted !== prev.isCompleted) {
+            updateShoppingListStatus(prev.id, allCompleted);
+          }
           
           return {
             ...prev,
@@ -198,7 +213,7 @@ export default function ShoppingListDetail() {
   }, [id, updatingItems]);
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!confirm('確定要刪除這個項目嗎？')) return;
+    if (!confirm('Are you sure you want to delete this item?')) return;
 
     try {
       const response = await axios.delete(`/api/shopping-lists/${id}/items?itemId=${itemId}`);
@@ -206,9 +221,20 @@ export default function ShoppingListDetail() {
       if (response.data.success) {
         setShoppingList(prev => {
           if (!prev) return null;
+          const updatedItems = prev.items.filter(item => item.id !== itemId);
+          
+          // Check if all remaining items are completed
+          const allCompleted = updatedItems.length > 0 && updatedItems.every(item => item.isCompleted);
+          
+          // Update shopping list completion status in database if it changed
+          if (allCompleted !== prev.isCompleted) {
+            updateShoppingListStatus(prev.id, allCompleted);
+          }
+          
           return {
             ...prev,
-            items: prev.items.filter(item => item.id !== itemId),
+            items: updatedItems,
+            isCompleted: allCompleted,
             _count: {
               items: prev._count.items - 1
             }
@@ -222,7 +248,7 @@ export default function ShoppingListDetail() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-TW', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -233,7 +259,7 @@ export default function ShoppingListDetail() {
     const grouped: { [key: string]: ShoppingListItem[] } = {};
     
     items.forEach(item => {
-      const category = item.category || '其他';
+      const category = item.category || 'Others';
       if (!grouped[category]) {
         grouped[category] = [];
       }
@@ -270,12 +296,12 @@ export default function ShoppingListDetail() {
       <Layout>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">購物清單未找到</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Shopping List Not Found</h1>
             <button
               onClick={() => router.push('/shopping-lists')}
               className="btn-primary"
             >
-              返回購物清單
+              Back to Shopping Lists
             </button>
           </div>
         </div>
@@ -289,8 +315,8 @@ export default function ShoppingListDetail() {
   return (
     <Layout>
       <Head>
-        <title>{shoppingList.name} - 購物清單詳情</title>
-        <meta name="description" content={`查看購物清單「${shoppingList.name}」的詳細內容`} />
+        <title>{shoppingList.name} - Shopping List Details</title>
+        <meta name="description" content={`View details of shopping list "${shoppingList.name}"`} />
       </Head>
 
       <div className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -302,7 +328,7 @@ export default function ShoppingListDetail() {
                 onClick={() => router.push('/shopping-lists')}
                 className="text-gray-500 hover:text-gray-700 mr-4"
               >
-                ← 返回購物清單
+                ← Back to Shopping Lists
               </button>
             </div>
             
@@ -317,15 +343,15 @@ export default function ShoppingListDetail() {
                 onClick={() => setShowAddForm(true)}
                 className="btn-primary"
               >
-                ➕ 添加項目
+                ➕ Add Item
               </button>
             </div>
 
             {/* Progress Bar */}
             <div className="bg-white rounded-lg p-4 border border-gray-200 mb-6">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">購物進度</span>
-                <span className="text-sm text-gray-500">{stats.completed}/{stats.total} 項目</span>
+                <span className="text-sm font-medium text-gray-700">Shopping Progress</span>
+                <span className="text-sm text-gray-500">{stats.completed}/{stats.total} items</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
@@ -334,7 +360,7 @@ export default function ShoppingListDetail() {
                 ></div>
               </div>
               <div className="text-center mt-2">
-                <span className="text-lg font-semibold text-green-600">{stats.percentage}% 完成</span>
+                <span className="text-lg font-semibold text-green-600">{stats.percentage}% Complete</span>
               </div>
             </div>
           </div>
@@ -343,32 +369,32 @@ export default function ShoppingListDetail() {
           {showAddForm && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-                <h2 className="text-xl font-semibold mb-4">添加購物項目</h2>
+                <h2 className="text-xl font-semibold mb-4">Add Shopping Item</h2>
                 <form onSubmit={handleAddItem}>
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        項目名稱 *
+                        Item Name *
                       </label>
                       <input
                         type="text"
                         value={newItem.name}
                         onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        placeholder="例如：蘋果"
+                        placeholder="e.g., Apple"
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        數量 *
+                        Quantity *
                       </label>
                       <input
                         type="text"
                         value={newItem.quantity}
                         onChange={(e) => setNewItem(prev => ({ ...prev, quantity: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        placeholder="例如：2"
+                        placeholder="e.g., 2"
                         required
                       />
                     </div>
@@ -377,19 +403,19 @@ export default function ShoppingListDetail() {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        單位
+                        Unit
                       </label>
                       <input
                         type="text"
                         value={newItem.unit}
                         onChange={(e) => setNewItem(prev => ({ ...prev, unit: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        placeholder="例如：個、公斤"
+                        placeholder="e.g., pieces, kg"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        分類
+                        Category
                       </label>
                       <select
                         value={newItem.category}
@@ -405,7 +431,7 @@ export default function ShoppingListDetail() {
 
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      估計價格
+                      Estimated Price
                     </label>
                     <input
                       type="number"
@@ -413,20 +439,20 @@ export default function ShoppingListDetail() {
                       value={newItem.estimatedPrice}
                       onChange={(e) => setNewItem(prev => ({ ...prev, estimatedPrice: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="例如：25.50"
+                      placeholder="e.g., 25.50"
                     />
                   </div>
 
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      備註
+                      Notes
                     </label>
                     <textarea
                       value={newItem.notes}
                       onChange={(e) => setNewItem(prev => ({ ...prev, notes: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       rows={2}
-                      placeholder="購物備註..."
+                      placeholder="Shopping notes..."
                     />
                   </div>
 
@@ -437,14 +463,14 @@ export default function ShoppingListDetail() {
                       className="btn-outline flex-1"
                       disabled={adding}
                     >
-                      取消
+                      Cancel
                     </button>
                     <button
                       type="submit"
                       className="btn-primary flex-1"
                       disabled={adding || !newItem.name.trim() || !newItem.quantity.trim()}
                     >
-                      {adding ? '添加中...' : '添加'}
+                      {adding ? 'Adding...' : 'Add'}
                     </button>
                   </div>
                 </form>
@@ -456,13 +482,13 @@ export default function ShoppingListDetail() {
           {shoppingList.items.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🛒</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">購物清單是空的</h3>
-              <p className="text-gray-500 mb-6">開始添加一些購物項目吧！</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Shopping list is empty</h3>
+              <p className="text-gray-500 mb-6">Start adding some shopping items!</p>
               <button
                 onClick={() => setShowAddForm(true)}
                 className="btn-primary"
               >
-                添加第一個項目
+                Add First Item
               </button>
             </div>
           ) : (
@@ -471,17 +497,17 @@ export default function ShoppingListDetail() {
                 <div key={category} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <span className="mr-2">
-                      {category === '蔬菜' && '🥬'}
-                      {category === '水果' && '🍎'}
-                      {category === '肉類' && '🥩'}
-                      {category === '海鮮' && '🐟'}
-                      {category === '乳製品' && '🥛'}
-                      {category === '調料' && '🧂'}
-                      {category === '穀物' && '🌾'}
-                      {category === '零食' && '🍿'}
-                      {category === '飲料' && '🥤'}
-                      {category === '冷凍食品' && '🧊'}
-                      {category === '其他' && '📦'}
+                      {category === 'Vegetables' && '🥬'}
+                      {category === 'Fruits' && '🍎'}
+                      {category === 'Meat' && '🥩'}
+                      {category === 'Seafood' && '🐟'}
+                      {category === 'Dairy' && '🥛'}
+                      {category === 'Seasonings' && '🧂'}
+                      {category === 'Grains' && '🌾'}
+                      {category === 'Snacks' && '🍿'}
+                      {category === 'Beverages' && '🥤'}
+                      {category === 'Frozen Foods' && '🧊'}
+                      {category === 'Others' && '📦'}
                     </span>
                     {category} ({items.length})
                   </h3>
@@ -534,7 +560,7 @@ export default function ShoppingListDetail() {
                             
                             {item.sourceRecipe && (
                               <p className="text-xs text-blue-600 mt-1">
-                                來自食譜: {item.sourceRecipe.name}
+                                From recipe: {item.sourceRecipe.name}
                               </p>
                             )}
                           </div>
@@ -543,7 +569,7 @@ export default function ShoppingListDetail() {
                         <button
                           onClick={() => handleDeleteItem(item.id)}
                           className="text-red-500 hover:text-red-700 text-sm ml-4"
-                          title="刪除項目"
+                          title="Delete Item"
                         >
                           🗑️
                         </button>

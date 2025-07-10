@@ -36,7 +36,7 @@ export default async function handler(
       });
     }
 
-    // 檢查收藏夾是否存在且屬於當前用戶
+    // Check if collection exists and belongs to current user
     const collection = await prisma.recipeCollection.findFirst({
       where: {
         id: collectionId,
@@ -52,7 +52,7 @@ export default async function handler(
     }
 
     if (req.method === 'GET') {
-      // 獲取收藏夾詳情和其中的食譜列表
+      // Get collection details and recipe list
       const collectionWithRecipes = await prisma.recipeCollection.findFirst({
         where: {
           id: collectionId,
@@ -98,7 +98,7 @@ export default async function handler(
       });
 
     } else if (req.method === 'POST') {
-      // 添加食譜到收藏夾
+      // Add recipe to collection
       const { recipeId, notes }: AddRecipeRequest = req.body;
 
       if (!recipeId) {
@@ -108,7 +108,7 @@ export default async function handler(
         });
       }
 
-      // 檢查食譜是否存在
+      // Check if recipe exists
       const recipe = await prisma.recipe.findUnique({
         where: { id: recipeId }
       });
@@ -120,7 +120,7 @@ export default async function handler(
         });
       }
 
-      // 檢查是否已經在收藏夾中
+      // Check if already in collection
       const existingEntry = await prisma.collectionRecipe.findUnique({
         where: {
           collectionId_recipeId: {
@@ -137,7 +137,7 @@ export default async function handler(
         });
       }
 
-      // 添加到收藏夾
+      // Add to collection
       await prisma.collectionRecipe.create({
         data: {
           collectionId,
@@ -153,7 +153,7 @@ export default async function handler(
       });
 
     } else if (req.method === 'DELETE') {
-      // 從收藏夾中移除食譜
+      // Remove recipe from collection
       const { recipeId } = req.query;
 
       if (!recipeId || typeof recipeId !== 'string') {
@@ -163,7 +163,7 @@ export default async function handler(
         });
       }
 
-      // 檢查是否在收藏夾中
+      // Check if in collection
       const existingEntry = await prisma.collectionRecipe.findUnique({
         where: {
           collectionId_recipeId: {
@@ -180,7 +180,7 @@ export default async function handler(
         });
       }
 
-      // 檢查是否屬於當前用戶
+      // Check if belongs to current user
       if (existingEntry.userId !== user.id) {
         return res.status(403).json({
           success: false,
@@ -188,7 +188,7 @@ export default async function handler(
         });
       }
 
-      // 從收藏夾中移除
+      // Remove from collection
       await prisma.collectionRecipe.delete({
         where: {
           id: existingEntry.id

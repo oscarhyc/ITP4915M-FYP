@@ -51,7 +51,7 @@ export default async function handler(
       });
     }
 
-    // 檢查購物清單是否存在且屬於當前用戶
+    // Check if shopping list exists and belongs to current user
     const shoppingList = await prisma.shoppingList.findFirst({
       where: {
         id: shoppingListId,
@@ -67,7 +67,7 @@ export default async function handler(
     }
 
     if (req.method === 'GET') {
-      // 獲取購物清單項目
+      // Get shopping list items
       const items = await prisma.shoppingListItem.findMany({
         where: {
           shoppingListId,
@@ -94,7 +94,7 @@ export default async function handler(
       });
 
     } else if (req.method === 'POST') {
-      // 添加新項目到購物清單
+      // Add new item to shopping list
       const { 
         name, 
         quantity, 
@@ -112,7 +112,7 @@ export default async function handler(
         });
       }
 
-      // 如果指定了來源食譜，檢查是否存在
+      // If source recipe is specified, check if it exists
       if (sourceRecipeId) {
         const recipe = await prisma.recipe.findUnique({
           where: { id: sourceRecipeId }
@@ -154,7 +154,7 @@ export default async function handler(
       });
 
     } else if (req.method === 'PUT') {
-      // 更新購物清單項目
+      // Update shopping list item
       const { itemId } = req.query;
       
       if (!itemId || typeof itemId !== 'string') {
@@ -166,7 +166,7 @@ export default async function handler(
 
       const updateData: UpdateItemRequest = req.body;
 
-      // 檢查項目是否存在且屬於當前用戶
+      // Check if item exists and belongs to current user
       const existingItem = await prisma.shoppingListItem.findFirst({
         where: {
           id: itemId,
@@ -210,7 +210,7 @@ export default async function handler(
       });
 
     } else if (req.method === 'DELETE') {
-      // 刪除購物清單項目
+      // Delete shopping list item
       const { itemId } = req.query;
       
       if (!itemId || typeof itemId !== 'string') {
@@ -220,7 +220,7 @@ export default async function handler(
         });
       }
 
-      // 檢查項目是否存在且屬於當前用戶
+      // Check if item exists and belongs to current user
       const existingItem = await prisma.shoppingListItem.findFirst({
         where: {
           id: itemId,

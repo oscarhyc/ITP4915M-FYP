@@ -82,9 +82,9 @@ export default function Collections() {
   };
 
   const handleDeleteCollection = async (collectionId: string, collectionName: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // 防止觸發卡片點擊事件
+    e.stopPropagation(); // Prevent triggering card click event
     
-    if (!confirm(`確定要刪除收藏夾「${collectionName}」嗎？此操作將同時刪除收藏夾中的所有食譜，且無法撤銷。`)) {
+    if (!confirm(`Are you sure you want to delete collection "${collectionName}"? This will also delete all recipes in the collection and cannot be undone.`)) {
       return;
     }
 
@@ -106,7 +106,7 @@ export default function Collections() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-TW', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -128,8 +128,8 @@ export default function Collections() {
   return (
     <Layout>
       <Head>
-        <title>我的收藏夾 - Smart Recipe Generator</title>
-        <meta name="description" content="管理您的食譜收藏夾" />
+        <title>My Collections - Smart Recipe Generator</title>
+        <meta name="description" content="Manage your recipe collections" />
       </Head>
 
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -137,14 +137,14 @@ export default function Collections() {
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">我的收藏夾</h1>
-              <p className="text-gray-600 mt-2">整理和管理您喜愛的食譜</p>
+              <h1 className="text-3xl font-bold text-gray-900">My Collections</h1>
+              <p className="text-gray-600 mt-2">Organize and manage your favorite recipes</p>
             </div>
             <button
               onClick={() => setShowCreateForm(true)}
               className="btn-primary"
             >
-              ➕ 新建收藏夾
+              ➕ New Collection
             </button>
           </div>
 
@@ -152,31 +152,31 @@ export default function Collections() {
           {showCreateForm && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-                <h2 className="text-xl font-semibold mb-4">創建新收藏夾</h2>
+                <h2 className="text-xl font-semibold mb-4">Create New Collection</h2>
                 <form onSubmit={handleCreateCollection}>
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      收藏夾名稱 *
+                      Collection Name *
                     </label>
                     <input
                       type="text"
                       value={newCollection.name}
                       onChange={(e) => setNewCollection(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="例如：早餐食譜"
+                      placeholder="e.g., Breakfast Recipes"
                       required
                     />
                   </div>
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      描述
+                      Description
                     </label>
                     <textarea
                       value={newCollection.description}
                       onChange={(e) => setNewCollection(prev => ({ ...prev, description: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       rows={3}
-                      placeholder="描述這個收藏夾的用途..."
+                      placeholder="Describe the purpose of this collection..."
                     />
                   </div>
                   <div className="mb-6">
@@ -187,7 +187,7 @@ export default function Collections() {
                         onChange={(e) => setNewCollection(prev => ({ ...prev, isPublic: e.target.checked }))}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-700">公開收藏夾</span>
+                      <span className="text-sm text-gray-700">Public Collection</span>
                     </label>
                   </div>
                   <div className="flex space-x-3">
@@ -197,14 +197,14 @@ export default function Collections() {
                       className="btn-outline flex-1"
                       disabled={creating}
                     >
-                      取消
+                      Cancel
                     </button>
                     <button
                       type="submit"
                       className="btn-primary flex-1"
                       disabled={creating || !newCollection.name.trim()}
                     >
-                      {creating ? '創建中...' : '創建'}
+                      {creating ? 'Creating...' : 'Create'}
                     </button>
                   </div>
                 </form>
@@ -216,18 +216,18 @@ export default function Collections() {
           {loadingCollections ? (
             <div className="flex items-center justify-center py-12">
               <div className="loading-spinner"></div>
-              <span className="ml-3 text-gray-600">載入收藏夾中...</span>
+              <span className="ml-3 text-gray-600">Loading collections...</span>
             </div>
           ) : collections.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📚</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">還沒有收藏夾</h3>
-              <p className="text-gray-500 mb-6">創建您的第一個收藏夾來整理食譜</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No collections yet</h3>
+              <p className="text-gray-500 mb-6">Create your first collection to organize recipes</p>
               <button
                 onClick={() => setShowCreateForm(true)}
                 className="btn-primary"
               >
-                創建收藏夾
+                Create Collection
               </button>
             </div>
           ) : (
@@ -245,14 +245,14 @@ export default function Collections() {
                     <div className="flex items-center space-x-2">
                       {collection.isPublic && (
                         <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                          公開
+                          Public
                         </span>
                       )}
                       <button
                         onClick={(e) => handleDeleteCollection(collection.id, collection.name, e)}
                         disabled={deletingId === collection.id}
                         className="text-red-500 hover:text-red-700 p-1 rounded transition-colors disabled:opacity-50"
-                        title="刪除收藏夾"
+                        title="Delete Collection"
                       >
                         {deletingId === collection.id ? '⏳' : '🗑️'}
                       </button>
@@ -267,7 +267,7 @@ export default function Collections() {
                   
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>
-                      {collection._count.collectionRecipes} 個食譜
+                      {collection._count.collectionRecipes} recipes
                     </span>
                     <span>
                       {formatDate(collection.createdAt)}

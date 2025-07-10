@@ -62,7 +62,7 @@ export default function CollectionDetail() {
 
     setLoadingCollection(true);
     try {
-      const response = await axios.get(`/api/collections/${id}/recipes`);
+      const response = await axios.get<{success: boolean; collection: Collection}>(`/api/collections/${id}/recipes`);
       if (response.data.success) {
         setCollection(response.data.collection);
       } else {
@@ -83,9 +83,9 @@ export default function CollectionDetail() {
 
     setRemovingRecipe(recipeId);
     try {
-      const response = await axios.delete(`/api/collections/${collection.id}/recipes`, {
-        data: { recipeId }
-      });
+      const response = await axios.delete<{success: boolean; message?: string}>(
+        `/api/collections/${collection.id}/recipes?recipeId=${recipeId}`
+      );
 
       if (response.data.success) {
         // Remove the recipe from local state
@@ -109,7 +109,7 @@ export default function CollectionDetail() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-TW', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -118,12 +118,15 @@ export default function CollectionDetail() {
 
   const generateShoppingList = async (recipeId: string, recipeName: string) => {
     try {
-      const response = await axios.post(`/api/recipes/${recipeId}/generate-shopping-list`, {
-        shoppingListName: `${recipeName} - 購物清單`
-      });
+      const response = await axios.post<{success: boolean; shoppingList: {id: string}; message?: string}>(
+        `/api/recipes/${recipeId}/generate-shopping-list`, 
+        {
+          shoppingListName: `${recipeName} - Shopping List`
+        }
+      );
 
       if (response.data.success) {
-        alert('購物清單已成功生成！');
+        alert('Shopping list generated successfully!');
         router.push(`/shopping-lists/${response.data.shoppingList.id}`);
       }
     } catch (error: any) {
@@ -149,12 +152,12 @@ export default function CollectionDetail() {
       <Layout>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">收藏夾未找到</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Collection Not Found</h1>
             <button
               onClick={() => router.push('/collections')}
               className="btn-primary"
             >
-              返回收藏夾列表
+              Back to Collections
             </button>
           </div>
         </div>
@@ -165,8 +168,8 @@ export default function CollectionDetail() {
   return (
     <Layout>
       <Head>
-        <title>{collection.name} - 收藏夾詳情</title>
-        <meta name="description" content={`查看收藏夾「${collection.name}」中的食譜`} />
+        <title>{collection.name} - Collection Details</title>
+        <meta name="description" content={`View recipes in collection "${collection.name}"`} />
       </Head>
 
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -178,7 +181,7 @@ export default function CollectionDetail() {
                 onClick={() => router.push('/collections')}
                 className="text-gray-500 hover:text-gray-700 mr-4"
               >
-                ← 返回收藏夾
+                ← Back to Collections
               </button>
             </div>
             
@@ -189,14 +192,14 @@ export default function CollectionDetail() {
                   <p className="text-gray-600 mb-4">{collection.description}</p>
                 )}
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
-                  <span>📚 {collection._count.collectionRecipes} 個食譜</span>
-                  <span>📅 創建於 {formatDate(collection.createdAt)}</span>
+                  <span>📚 {collection._count.collectionRecipes} recipes</span>
+                  <span>📅 Created on {formatDate(collection.createdAt)}</span>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     collection.isPublic 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {collection.isPublic ? '公開' : '私人'}
+                    {collection.isPublic ? 'Public' : 'Private'}
                   </span>
                 </div>
               </div>
@@ -207,13 +210,13 @@ export default function CollectionDetail() {
           {collection.collectionRecipes.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📚</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">收藏夾是空的</h3>
-              <p className="text-gray-500 mb-6">開始添加一些食譜到這個收藏夾吧！</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Collection is empty</h3>
+              <p className="text-gray-500 mb-6">Start adding some recipes to this collection!</p>
               <button
                 onClick={() => router.push('/')}
                 className="btn-primary"
               >
-                瀏覽食譜
+                Browse Recipes
               </button>
             </div>
           ) : (
@@ -233,14 +236,14 @@ export default function CollectionDetail() {
                         onClick={() => handleRemoveRecipe(recipe.id)}
                         disabled={removingRecipe === recipe.id}
                         className="text-red-500 hover:text-red-700 text-sm disabled:opacity-50"
-                        title="從收藏夾移除"
+                        title="Remove from collection"
                       >
-                        {removingRecipe === recipe.id ? '移除中...' : '✕'}
+                        {removingRecipe === recipe.id ? 'Removing...' : '✕'}
                       </button>
                     </div>
 
                     <p className="text-sm text-gray-600 mb-3">
-                      作者: {recipe.user.name}
+                      Author: {recipe.user.name}
                     </p>
 
                     {recipe.dietaryPreference && recipe.dietaryPreference.length > 0 && (
@@ -260,7 +263,7 @@ export default function CollectionDetail() {
                     )}
 
                     <div className="mb-3">
-                      <p className="text-sm text-gray-600 mb-1">食材:</p>
+                      <p className="text-sm text-gray-600 mb-1">Ingredients:</p>
                       <p className="text-sm text-gray-800 line-clamp-2">
                         {recipe.ingredients.slice(0, 3).map(ing => `${ing.quantity} ${ing.name}`).join(', ')}
                         {recipe.ingredients.length > 3 && '...'}
@@ -270,14 +273,14 @@ export default function CollectionDetail() {
                     {collectionRecipe.notes && (
                       <div className="mb-3 p-2 bg-yellow-50 rounded">
                         <p className="text-sm text-gray-700">
-                          <span className="font-medium">筆記:</span> {collectionRecipe.notes}
+                          <span className="font-medium">Notes:</span> {collectionRecipe.notes}
                         </p>
                       </div>
                     )}
 
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                      <span>❤️ {recipe.likesCount} 個讚</span>
-                      <span>收藏於 {formatDate(collectionRecipe.addedAt)}</span>
+                      <span>❤️ {recipe.likesCount} likes</span>
+                      <span>Added on {formatDate(collectionRecipe.addedAt)}</span>
                     </div>
 
                     {/* Action Buttons */}
@@ -286,7 +289,7 @@ export default function CollectionDetail() {
                         onClick={() => generateShoppingList(recipe.id, recipe.name)}
                         className="btn-outline text-sm flex-1"
                       >
-                        🛒 生成購物清單
+                        🛒 Generate Shopping List
                       </button>
                     </div>
                   </div>
