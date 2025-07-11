@@ -48,9 +48,9 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 USER nextjs
 
-EXPOSE 3002
+EXPOSE 3000
 
-ENV PORT 3002
+ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
 # Run database migrations and start the application
