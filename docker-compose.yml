@@ -1,4 +1,30 @@
 services:
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: [
+      "certonly",
+      "--webroot",
+      "-w", "/var/www/certbot",
+      "--force-renewal",
+      "--email",
+      "thomas.yoshiii@gmail.com",
+      "-d",
+      "cms.ite4108m.com",
+      "--agree-tos"  ]
+  namecheap-ddns:
+    image: joshuamorris3/namecheap-ddns-update
+    build:
+      context: ./namecheap-ddns
+      dockerfile: Dockerfile
+    container_name: namecheap_ddns_updater
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - recipe-network
   nginx:
     container_name: nginx
     image: nginx:1.19.4
