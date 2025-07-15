@@ -1,159 +1,272 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Tables from the provided excerpt
+model RecipeProgramme {
+  id                String   @id @map("programme_id") @db.VarChar(255)
+  host              String   @map("host") @db.VarChar(255)
+  programme_title   String   @map("programme_title") @db.VarChar(255)
+  programme_start_at DateTime @map("programme_start_at")
+  programme_end_at  DateTime @map("programme_end_at")
+}
+
+model UserReunion {
+  id                String   @id @map("event_id") @db.VarChar(255)
+  event_title       String   @map("event_title") @db.VarChar(255)
+  event_description String   @map("event_description") @db.VarChar(255)
+  event_start_date  DateTime @map("event_start_date")
+  event_end_date    DateTime @map("event_end_date")
+  created_at        DateTime @map("created_at")
+  updated_at        DateTime @map("updated_at")
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String   @db.VarChar(255)
+}
+
+model SystemMaintenance {
+  id                String   @id @map("maintenance_id") @db.VarChar(255)
+  description       String   @map("description") @db.VarChar(255)
+  scheduled_from    DateTime @map("scheduled_from")
+  schedule_end_date DateTime @map("schedule_end_date")
+}
+
+model Gift {
+  id          Int      @id @map("gift_item_id")
+  gift_name   Int      @map("gift_name")
+  quantity    Int      @map("quantity")
+  created_at  Int      @map("created_at")
+  updated_at  Int      @map("updated_at")
+  cost        Int      @map("cost")
+  event       EventWithCompany @relation(fields: [eventId], references: [id])
+  eventId     String   @db.VarChar(255)
+}
+
+model SystemMail {
+  id                String   @id @map("mail_id") @db.VarChar(255)
+  recipient_user_id String   @map("recipient_user_id") @db.VarChar(255)
+  from_user_id      String   @map("from_user_id") @db.VarChar(255)
+  mail_title        String   @map("mail_title") @db.VarChar(255)
+  mail_content      String   @map("mail_content") @db.VarChar(255)
+  created_at        DateTime @map("created_at")
+  updated_at        DateTime @map("updated_at")
+  sent_at           DateTime @map("sent_at")
+  recipient         User     @relation("Recipient", fields: [recipient_user_id], references: [id])
+  sender            User     @relation("Sender", fields: [from_user_id], references: [id])
+}
+
+model ChatRoom {
+  id                String   @id @map("room_id") @db.VarChar(255)
+  room_title        String   @map("room_titile") @db.VarChar(255)
+  room_description  String   @map("room_description") @db.VarChar(255)
+  user_id           String   @map("user_id") @db.VarChar(255)
+  is_public         Boolean  @map("is_public")
+  created_at        DateTime @map("create_at")
+  updated_at        DateTime @map("update_at")
+  user              User     @relation(fields: [user_id], references: [id])
+}
+
+model UserAttachmentFolder {
+  id                String   @id @map("folder_id") @db.VarChar(255)
+  user_id           String   @map("user_id") @db.VarChar(255)
+  created_at        DateTime @map("created_at")
+  updated_at        DateTime @map("updated_at")
+  is_shared         Boolean  @map("is_shared")
+  storage_size      Float    @map("storage_size")
+  user              User     @relation(fields: [user_id], references: [id])
+}
+
+model EventWithCompany {
+  id                String   @id @map("event_id") @db.VarChar(255)
+  nature_of_event   String   @map("nature_of_event") @db.VarChar(255)
+  company_id        String   @map("company_id") @db.VarChar(255)
+  description       String   @map("description") @db.VarChar(255)
+  remarks           String   @map("remarks") @db.VarChar(255)
+  created_at        DateTime @map("created_at")
+  updated_at        DateTime @map("updated_at")
+  event_start_date  DateTime @map("event_start_date")
+  event_end_date    DateTime @map("event_end_date")
+  company           PartnetCompany @relation(fields: [company_id], references: [id])
+  gifts             Gift[]
+}
+
+model PartnetCompany {
+  id                String   @id @map("company_id") @db.VarChar(255)
+  company_name      String   @map("company_name") @db.VarChar(255)
+  created_at        DateTime @map("created_at")
+  updated_at        DateTime @map("updated_at")
+  events            EventWithCompany[]
+}
+
+model SystemNews {
+  id                String   @id @map("news_id") @db.VarChar(255)
+  news_content      String   @map("news_content") @db.VarChar(255)
+  created_at        DateTime @map("created_at")
+  updated_at        DateTime @map("updated_at")
+  expired_at        DateTime @map("expired_at")
+  to_role_id        String   @map("to_role_id") @db.VarChar(255)
+  role              Role     @relation(fields: [to_role_id], references: [id])
+}
+
+model Role {
+  id                String   @id @map("role_id") @db.VarChar(255)
+  role_name         String   @map("role_name") @db.VarChar(255)
+  created_at        DateTime @map("created_at")
+  updated_at        DateTime @map("updated_at")
+  news              SystemNews[]
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  image     String?
-  emailVerified DateTime?
-  isActive  Boolean  @default(true)
-  role      String   @default("user")
-  
-  // Preferences as JSON
-  preferences Json @default("{}")
-  
-  // Stats as JSON  
-  stats     Json @default("{}")
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
-  recipes   Recipe[]
-  forumPosts ForumPost[]
-  forumComments ForumComment[]
-  notifications Notification[]
-  aiGenerated AIGenerated[]
-  
-  @@map("users")
+  id                String   @id @map("id") @db.VarChar(40)
+  email             String   @unique @map("email") @db.VarChar(50)
+  name              String   @map("name") @db.VarChar(50)
+  password          String   @map("password") @db.VarChar(255)
+  image             String?  @map("image") @db.VarChar(255)
+  email_verified    DateTime? @map("email_verified")
+  is_active         Boolean  @map("is_active")
+  role              String   @default("user") @map("role") @db.VarChar(50)
+  recipes           Int?     @map("recipes")
+  chatRooms         ChatRoom[]
+  attachmentFolders UserAttachmentFolder[]
+  userReunions      UserReunion[]
+  receivedMails     SystemMail[] @relation("Recipient")
+  sentMails         SystemMail[] @relation("Sender")
 }
 
-model Recipe {
-  id          String   @id @default(cuid())
-  name        String
-  ingredients Json     // Array of {name, quantity}
-  instructions String[]
-  dietaryPreference String[]
-  additionalInformation Json @default("{}")
-  
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  likes       String[] // Array of user IDs
-  likesCount  Int      @default(0)
-  image       String?
-  audio       String?
-  tags        Json     @default("[]") // Array of {tag}
-  
-  openaiPromptId String?
-  isShared    Boolean  @default(false)
-  sharedAt    DateTime?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("recipes")
+// Additional inferred tables
+model Department {
+  id                String   @id @db.VarChar(255)
+  name              String   @db.VarChar(255)
+  created_at        DateTime
 }
 
-model ForumPost {
-  id            String   @id @default(cuid())
-  title         String
-  content       String
-  category      String   // tips, ingredients, questions, reviews
-  
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userName      String
-  
-  tags          String[]
-  likes         String[] // Array of user IDs
-  likesCount    Int      @default(0)
-  commentsCount Int      @default(0)
-  
-  isSticky      Boolean  @default(false)
-  isLocked      Boolean  @default(false)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  // Relations
-  comments      ForumComment[]
-  
-  @@map("forumposts")
+model Employee {
+  id                String   @id @db.VarChar(255)
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String   @db.VarChar(255)
+  department        Department @relation(fields: [departmentId], references: [id])
+  departmentId      String   @db.VarChar(255)
 }
 
-model ForumComment {
-  id              String   @id @default(cuid())
-  content         String
-  
-  postId          String
-  post            ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userName        String
-  
-  parentCommentId String?
-  parentComment   ForumComment? @relation("CommentReplies", fields: [parentCommentId], references: [id])
-  replies         ForumComment[] @relation("CommentReplies")
-  
-  likes           String[] // Array of user IDs
-  likesCount      Int      @default(0)
-  isDeleted       Boolean  @default(false)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@map("forumcomments")
+model Project {
+  id                String   @id @db.VarChar(255)
+  title             String   @db.VarChar(255)
+  created_at        DateTime
+}
+
+model Task {
+  id                String   @id @db.VarChar(255)
+  project           Project  @relation(fields: [projectId], references: [id])
+  projectId         String   @db.VarChar(255)
+  description       String   @db.VarChar(255)
+}
+
+model Assignment {
+  id                String   @id @db.VarChar(255)
+  task              Task     @relation(fields: [taskId], references: [id])
+  taskId            String   @db.VarChar(255)
+  employee          Employee @relation(fields: [employeeId], references: [id])
+  employeeId        String   @db.VarChar(255)
+}
+
+model Comment {
+  id                String   @id @db.VarChar(255)
+  task              Task     @relation(fields: [taskId], references: [id])
+  taskId            String   @db.VarChar(255)
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String   @db.VarChar(255)
+  content           String   @db.VarChar(255)
 }
 
 model Notification {
-  id              String   @id @default(cuid())
-  
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  type            String   // like, comment, follow, recipe_generated, system
-  message         String
-  relatedRecipeId String?
-  relatedUserId   String?
-  read            Boolean  @default(false)
-  priority        String   @default("medium") // low, medium, high
-  metadata        Json?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@map("notifications")
+  id                String   @id @db.VarChar(255)
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String   @db.VarChar(255)
+  message           String   @db.VarChar(255)
+  created_at        DateTime
 }
 
-model AIGenerated {
-  id           String   @id @default(cuid())
-  
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  prompt       String
-  response     Json
-  model        String   @default("gemini-2.0-flash")
-  tokens       Int      @default(0)
-  cost         Float    @default(0)
-  status       String   @default("success") // success, error, pending
-  errorMessage String?
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  @@map("aigenerateds")
+model Tag {
+  id                String   @id @db.VarChar(255)
+  name              String   @db.VarChar(255)
+}
+
+model TaskTag {
+  id                String   @id @db.VarChar(255)
+  task              Task     @relation(fields: [taskId], references: [id])
+  taskId            String   @db.VarChar(255)
+  tag               Tag      @relation(fields: [tagId], references: [id])
+  tagId             String   @db.VarChar(255)
+}
+
+model Team {
+  id                String   @id @db.VarChar(255)
+  name              String   @db.VarChar(255)
+}
+
+model TeamMember {
+  id                String   @id @db.VarChar(255)
+  team              Team     @relation(fields: [teamId], references: [id])
+  teamId            String   @db.VarChar(255)
+  employee          Employee @relation(fields: [employeeId], references: [id])
+  employeeId        String   @db.VarChar(255)
+}
+
+model Meeting {
+  id                String   @id @db.VarChar(255)
+  team              Team     @relation(fields: [teamId], references: [id])
+  teamId            String   @db.VarChar(255)
+  scheduled_at      DateTime
+}
+
+model Attendance {
+  id                String   @id @db.VarChar(255)
+  meeting           Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId         String   @db.VarChar(255)
+  employee          Employee @relation(fields: [employeeId], references: [id])
+  employeeId        String   @db.VarChar(255)
+}
+
+model Resource {
+  id                String   @id @db.VarChar(255)
+  name              String   @db.VarChar(255)
+  project           Project  @relation(fields: [projectId], references: [id])
+  projectId         String   @db.VarChar(255)
+}
+
+model Invoice {
+  id                String   @id @db.VarChar(255)
+  project           Project  @relation(fields: [projectId], references: [id])
+  projectId         String   @db.VarChar(255)
+  amount            Float
+}
+
+model Payment {
+  id                String   @id @db.VarChar(255)
+  invoice           Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId         String   @db.VarChar(255)
+  amount            Float
+  paid_at           DateTime
+}
+
+model Review {
+  id                String   @id @db.VarChar(255)
+  project           Project  @relation(fields: [projectId], references: [id])
+  projectId         String   @db.VarChar(255)
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String   @db.VarChar(255)
+  rating            Int
+}
+
+model Feedback {
+  id                String   @id @db.VarChar(255)
+  review            Review   @relation(fields: [reviewId], references: [id])
+  reviewId          String   @db.VarChar(255)
+  content           String   @db.VarChar(255)
 }
